@@ -1,0 +1,15 @@
+Changes
+LICENSE
+MANIFEST
+META.yml
+Makefile.PL
+README
+dist.ini
+examples/client.pl
+lib/Protocol/IMAP.pm
+lib/Protocol/IMAP/Client.pm
+lib/Protocol/IMAP/Server.pm
+t/00-pod.t
+t/00-use.t
+t/imap.t
+tmp.html
