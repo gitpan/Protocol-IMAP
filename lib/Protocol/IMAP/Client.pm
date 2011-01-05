@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use parent qw{Protocol::IMAP};
 
+our $VERSION = '0.002';
+
 =head1 NAME
 
 Protocol::IMAP::Client - client support for the Internet Message Access Protocol.
@@ -195,7 +197,9 @@ sub on_single_line {
 		$code->($status, $response) if $code;
 		delete $self->{waiting}->{$id};
 	}
-	return 1;
+
+	return 0 unless $self->is_multi_line;
+	return $self->{multiline}->{remaining};
 }
 
 =head2 on_multi_line
@@ -210,7 +214,9 @@ sub on_multi_line {
 	if($self->{multiline}->{remaining}) {
 		$self->{multiline}->{buffer} .= $data;
 		$self->{multiline}->{remaining} -= length($data);
-	} else {
+	}
+
+	if($self->{multiline}->{remaining} == 0) {
 		$self->{multiline}->{on_complete}->($self->{multiline}->{buffer});
 		delete $self->{multiline};
 	}
@@ -243,8 +249,10 @@ sub untagged_fetch {
 	my ($idx, $data) = @_;
 	$self->debug("Fetch data: $data");
 	my ($len) = $data =~ /{(\d+)}/;
+	$self->debug("Length is " . (defined($len) ? $len : "not defined"));
 	return $self unless defined $len;
 
+	$self->debug("Expect to extract [$len]");
 	$self->{multiline} = {
 		remaining => $len,
 		buffer => '',
@@ -656,8 +664,8 @@ sub fetch : method {
 	my $self = shift;
 	my %args = @_;
 
-	my $msg = $args{message} // 1;
-	my $type = $args{type} // 'ALL';
+	my $msg = exists $args{message} ? $args{message} : 1;
+	my $type = exists $args{type} ? $args{type} : 'ALL';
 	$self->send_command(
 		command		=> 'FETCH',
 		param		=> "$msg $type",
@@ -684,7 +692,7 @@ sub delete : method {
 	my $self = shift;
 	my %args = @_;
 
-	my $msg = $args{message} // 1;
+	my $msg = exists $args{message} ? $args{message} : 1;
 	$self->send_command(
 		command		=> 'STORE',
 		param		=> $msg . ' +FLAGS (\Deleted)',

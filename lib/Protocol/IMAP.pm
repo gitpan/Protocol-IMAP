@@ -10,11 +10,11 @@ use Authen::SASL;
 use Time::HiRes qw{time};
 use POSIX qw{strftime};
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 =head1 NAME
 
-Protocol::IMAP - client support for the Internet Message Access Protocol as defined in RFC3501.
+Protocol::IMAP - support for the Internet Message Access Protocol as defined in RFC3501.
 
 =head1 SYNOPSIS
 
@@ -24,17 +24,6 @@ Protocol::IMAP - client support for the Internet Message Access Protocol as defi
 =head1 DESCRIPTION
 
 Base class for L<Protocol::IMAP::Server> and L<Protocol::IMAP::Client> implementations.
-
-=head1 AUTHOR
-
-Tom Molesworth <cpan@entitymodel.com>
-
-with thanks to Paul Evans <leonerd@leonerd.co.uk> for the L<IO::Async> framework, which provides
-the foundation for L<Net::Async::IMAP>.
-
-=head1 LICENSE
-
-Licensed under the same terms as Perl itself.
 
 =head1 METHODS
 
@@ -50,9 +39,12 @@ BEGIN {
 		++$stateId;
 	}
 	my @handlers = sort values %StateMap;
+	# Convert from ConnectionClosed to on_connection_closed, etc.
 	@handlers = map { $_ = "on$_"; s/([A-Z])/'_' . lc($1)/ge; $_ } @handlers;
 	{ no strict 'refs'; *{__PACKAGE__ . "::STATE_HANDLERS"} = sub () { @handlers; }; }
 }
+
+sub new { my $class = shift; bless { @_ }, $class }
 
 =head2 C<debug>
 
@@ -119,3 +111,16 @@ sub _capture_weakself {
 }
 
 1;
+__END__
+
+=head1 AUTHOR
+
+Tom Molesworth <protocol-imap@entitymodel.com>
+
+with thanks to Paul Evans <leonerd@leonerd.co.uk> for the L<IO::Async> framework, which provides
+the foundation for L<Net::Async::IMAP>.
+
+=head1 LICENSE
+
+Licensed under the same terms as Perl itself.
+

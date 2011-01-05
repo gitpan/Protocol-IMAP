@@ -11,5 +11,6 @@ lib/Protocol/IMAP/Client.pm
 lib/Protocol/IMAP/Server.pm
 t/00-pod.t
 t/00-use.t
+t/baseclass.t
+t/client.t
 t/imap.t
-tmp.html
