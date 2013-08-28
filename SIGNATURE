@@ -1,0 +1,55 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.73.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 54ab7a0ad3816fd1e04f467e11ba048793868863 Changes
+SHA1 b4703c32de255868539740e0b97e0e77c0c2f88e INSTALL
+SHA1 fcecd203a27c044eb4138dc70de012aa384a2234 LICENSE
+SHA1 550dbf531d139e6a3f0749a5b376c0715a9e1aea MANIFEST
+SHA1 795d52e2fa59ef1708976c14fb450fef2ab60aae META.json
+SHA1 18f8caa5d6f74ab7cd833eb81726fa6a50baa5cd META.yml
+SHA1 72f938cba5a8178fa8d4ab96fe5ae9a96be9b6c0 Makefile.PL
+SHA1 5bb6f35eb4063587f79e9a0f7a11edca8b523f34 README
+SHA1 ad2cf2be3f1c9aa9fef52ff5a47fec13e0528fc4 cpanfile
+SHA1 671050797f91d508ff696a2e629b1e9924cc1903 dist.ini
+SHA1 256a0d98afaae9824357c28f9f0867c8b5a05c33 examples/client.pl
+SHA1 07508133d24fac3998f70218d825f253e58b76a0 lib/Protocol/IMAP.pm
+SHA1 8cc52e37201ae41a18a6830d53b48773e3b788ad lib/Protocol/IMAP/Client.pm
+SHA1 64c40e43a0941953ec63773ac005a58511944361 lib/Protocol/IMAP/Client.pod
+SHA1 666f90827a3903f16872cf1fd0e0abaec9d9e736 lib/Protocol/IMAP/Server.pm
+SHA1 2f24ccc53c388a71156750692830223ec6a134f6 lib/Protocol/IMAP/Server.pod
+SHA1 90f75289c4dda63c94bc5e897f4996b15d9e42dd t/00-check-deps.t
+SHA1 0c0f8e5be1167ccce58d9f1d69523e47f1a305f0 t/00-compile.t
+SHA1 47526813af76ae1dd2ab8a3ea02891b176ddecdf t/baseclass.t
+SHA1 4d2c8538f4612a19fff29650cf779c24e27a5fc7 t/client.t
+SHA1 399839a437ec15143cf0025a387d1ca5369de278 t/imap.t
+SHA1 6384cbfdd586dafc0a3d9dc67f0a344803d02d75 t/states.t
+SHA1 6f846f7ede312098a614207bcea6fdb2207b8030 xt/author/test-eol.t
+SHA1 198d1665317c3d91e3bb81f0a3b8dad8d4d66f20 xt/release/common_spelling.t
+SHA1 c6c3c9f7fe12058b4771449dff874b1c450c982c xt/release/mojibake.t
+SHA1 9934d36e45e1143c1a54658bc48872e0591af41b xt/release/pod-syntax.t
+SHA1 fd1fa776fca35fc8f1bdd24ee3fbaa1eca755a44 xt/release/synopsis.t
+SHA1 bbcd59d081d9940af5d43337ae85458075933829 xt/release/test-version.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJSHmcgAAoJEFKElMNpjtyD8pgH/067MQ9DH1t7hKDm2It+41jd
+v7NFiB07VbHfHh0Zfma9h/P3/kKPGocXrcSWNrEtLRIF+BIlZRL8D/VAt01kvCEy
+s+Z2GsVD16jc+y9RbsaofaoEA1sp7NKcqEqkBq6wsUVgDG0w+y7FtBoRbGGXLZ6q
+xmVuacnOwbH21fpMMHk/GazZeChcwwJgryBikj20ilkJLrC+USnbpLDSEK5L+G64
+3scl0Rd8doc/odvAXtFPsT3xJ0+EsvNgdMJgeQ1yaFZXL6p8ZkCOPQqrKj60LHJW
+TBq4z830wAe3XQcqZN4YdXnQ4DfKVyGr0XbsZIgRBCnt1lzCgEHeJrBGE4Bgn+Q=
+=mmhv
+-----END PGP SIGNATURE-----

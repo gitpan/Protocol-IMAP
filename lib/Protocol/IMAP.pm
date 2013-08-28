@@ -10,11 +10,15 @@ use Authen::SASL;
 use Time::HiRes qw{time};
 use POSIX qw{strftime};
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 =head1 NAME
 
 Protocol::IMAP - support for the Internet Message Access Protocol as defined in RFC3501.
+
+=head1 VERSION
+
+version 0.003
 
 =head1 SYNOPSIS
 
@@ -30,21 +34,41 @@ Base class for L<Protocol::IMAP::Server> and L<Protocol::IMAP::Client> implement
 =cut
 
 # Build up an enumerated list of states. These are defined in the RFC and are used to indicate what we expect to send / receive at client and server ends.
-our %StateMap;
+our %VALID_STATES;
+our %STATE_BY_ID;
+our %STATE_BY_NAME;
 BEGIN {
-	my $stateId = 0;
-	foreach (qw{ConnectionClosed ConnectionEstablished ServerGreeting NotAuthenticated Authenticated Selected Logout}) {
-		{ no strict 'refs'; *{__PACKAGE__ . '::' . $_} = sub () { $stateId; }; }
-		$StateMap{$stateId} = $_;
-		++$stateId;
+	our @STATES = qw{
+		ConnectionClosed ConnectionEstablished
+		ServerGreeting
+		NotAuthenticated Authenticated
+		Selected
+		Logout
+	};
+	%VALID_STATES = map { $_ => 1 } @STATES;
+	my $state_id = 0;
+	foreach (@STATES) {
+		my $id = $state_id;
+		{ no strict 'refs'; *{__PACKAGE__ . '::' . $_} = sub () { $id } }
+		$STATE_BY_ID{$state_id} = $_;
+		++$state_id;
 	}
-	my @handlers = sort values %StateMap;
+	%STATE_BY_NAME = reverse %STATE_BY_ID;
+
 	# Convert from ConnectionClosed to on_connection_closed, etc.
-	@handlers = map { $_ = "on$_"; s/([A-Z])/'_' . lc($1)/ge; $_ } @handlers;
-	{ no strict 'refs'; *{__PACKAGE__ . "::STATE_HANDLERS"} = sub () { @handlers; }; }
+	my @handlers = sort values %STATE_BY_ID;
+	@handlers = map {;
+		my $v = "on$_";
+		$v =~ s/([A-Z])/'_' . lc($1)/ge;
+		$v
+	} @handlers;
+	{ no strict 'refs'; *{__PACKAGE__ . "::STATE_HANDLERS"} = sub () { @handlers } }
 }
 
-sub new { my $class = shift; bless { @_ }, $class }
+sub new {
+	my $class = shift;
+	bless { @_ }, $class
+}
 
 =head2 C<debug>
 
@@ -54,7 +78,7 @@ Debug log message. Only displayed if the debug flag was passed to L<configure>.
 
 sub debug {
 	my $self = shift;
-	return unless $self->{debug};
+	return $self unless $self->{debug};
 
 	my $now = Time::HiRes::time;
 	warn strftime("%Y-%m-%d %H:%M:%S", gmtime($now)) . sprintf(".%03d", int($now * 1000.0) % 1000.0) . " @_\n";
@@ -68,19 +92,50 @@ sub debug {
 sub state {
 	my $self = shift;
 	if(@_) {
-		$self->{state} = shift;
-		$self->debug("State changed to " . $self->{state} . " (" . $Protocol::IMAP::StateMap{$self->{state}} . ")");
+		my $name = shift;
+		$self->{state_id} = $STATE_BY_NAME{$name} or die "Invalid state [$name]";
+		$self->debug("State changed to " . $self->{state_id} . " (" . $Protocol::IMAP::STATE_BY_ID{$self->{state_id}} . ")");
 		# ConnectionEstablished => on_connection_established
-		my $method = 'on' . $Protocol::IMAP::StateMap{$self->{state}};
+		my $method = 'on' . $Protocol::IMAP::STATE_BY_ID{$self->{state_id}};
 		$method =~ s/([A-Z])/'_' . lc($1)/ge;
 		if($self->{$method}) {
 			$self->debug("Trying method for [$method]");
 			# If the override returns false, skip the main function
-			return $self->{state} unless $self->{$method}->(@_);
+			return $self->{state_id} unless $self->{$method}->(@_);
 		}
 		$self->$method(@_) if $self->can($method);
 	}
-	return $self->{state};
+	return $STATE_BY_ID{$self->{state_id}};
+}
+
+=head2 state_id
+
+Returns the state matching the given ID.
+
+=cut
+
+sub state_id {
+	my $self = shift;
+	if(@_) {
+		my $id = shift;
+		die "Invalid state ID [$id]" unless exists $STATE_BY_ID{$id};
+		return $self->state($STATE_BY_ID{$id});
+	}
+	return $self->{state_id};
+}
+
+=head2 in_state
+
+Returns true if we're in the given state.
+
+=cut
+
+sub in_state {
+	my $self = shift;
+	my $expect = shift;
+	die "Invalid state $expect" unless exists $VALID_STATES{$expect};
+	return 1 if $self->state == $self->$expect;
+	return 0;
 }
 
 =head2 C<write>
@@ -111,11 +166,12 @@ sub _capture_weakself {
 }
 
 1;
+
 __END__
 
 =head1 AUTHOR
 
-Tom Molesworth <protocol-imap@entitymodel.com>
+Tom Molesworth <cpan@entitymodel.com>
 
 with thanks to Paul Evans <leonerd@leonerd.co.uk> for the L<IO::Async> framework, which provides
 the foundation for L<Net::Async::IMAP>.
@@ -123,4 +179,3 @@ the foundation for L<Net::Async::IMAP>.
 =head1 LICENSE
 
 Licensed under the same terms as Perl itself.
-

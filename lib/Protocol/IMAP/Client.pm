@@ -1,13 +1,18 @@
 package Protocol::IMAP::Client;
+{
+  $Protocol::IMAP::Client::VERSION = '0.003';
+}
 use strict;
 use warnings;
 use parent qw{Protocol::IMAP};
 
-our $VERSION = '0.002';
-
 =head1 NAME
 
 Protocol::IMAP::Client - client support for the Internet Message Access Protocol.
+
+=head1 VERSION
+
+version 0.003
 
 =head1 SYNOPSIS
 
@@ -176,7 +181,7 @@ sub on_single_line {
 
 	$data =~ s/[\r\n]+//g;
 	$self->debug("Had [$data]");
-	if($self->state == Protocol::IMAP::ConnectionEstablished) {
+	if($self->in_state('ConnectionEstablished')) {
 		$self->check_greeting($data);
 	}
 
@@ -342,35 +347,13 @@ sub check_capability {
 		if($cap =~ /^auth=(.*)/i) {
 			push @{ $self->{authtype} }, $1;
 		} else {
+			# Some servers have variations on the case here, fold to a standard case for ease of checking later
+			$cap = 'IMAP4rev1' if lc $cap eq 'imap4rev1';
 			$self->{capability}->{$cap} = 1;
 		}
 	}
 	die "Not IMAP4rev1-capable" unless $self->{capability}->{'IMAP4rev1'};
 	$self->on_capability($self->{capability});
-}
-
-=head2 on_message
-
-Virtual method called when we received a message (as the result of an untagged FETCH response).
-
-=cut
-
-sub on_message {
-	my $self = shift;
-	my $msg = shift;
-	$self->debug("Have received a message");
-}
-
-=head2 on_message_available
-
-Virtual method called when there's a new message available in one of the active mailboxes.
-
-=cut
-
-sub on_message_available {
-	my $self = shift;
-	my $msg = shift;
-	$self->debug("New message available");
 }
 
 =head2 on_capability
@@ -395,9 +378,9 @@ sub check_greeting {
 	my $self = shift;
 	my $data = shift;
 	if($data =~ /^\* OK/) {
-		$self->state(Protocol::IMAP::ServerGreeting, $data);
+		$self->state('ServerGreeting', $data);
 	} else {
-		$self->state(Protocol::IMAP::Logout);
+		$self->state('Logout');
 	}
 }
 
@@ -415,7 +398,7 @@ sub get_capabilities {
 			my $self = shift;
 			my $data = shift;
 			$self->debug("Successfully retrieved caps: $data");
-			$self->state(Protocol::IMAP::NotAuthenticated);
+			$self->state('NotAuthenticated');
 		}),
 		on_bad		=> $self->_capture_weakself(sub {
 			my $self = shift;
@@ -470,6 +453,17 @@ sub send_command {
 	my $self = shift;
 	my %args = @_;
 	my $id = exists $args{id} ? $args{id} : $self->next_id;
+	if($self->{in_idle} && defined $id) {
+# If we're currently in IDLE mode, we have to finish the current command first by issuing the DONE command.
+		return $self->done(
+			on_ok	=> $self->_capture_weakself(sub {
+				my $self = shift;
+				$self->{in_idle} = 0;
+				$self->send_command(%args, id => $id);
+			})
+		);
+	}
+
 	my $cmd = $args{command};
 	my $data = defined $id ? "$id " : '';
 	$data .= $cmd;
@@ -486,6 +480,7 @@ sub send_command {
 		$self->{idle_queue} = $data;
 		$self->done;
 	} else {
+		$self->debug("In idle?") if $self->{in_idle};
 		$self->write("$data\r\n");
 		$self->{in_idle} = 1 if $args{command} eq 'IDLE';
 	}
@@ -519,7 +514,7 @@ sub login {
 			my $self = shift;
 			my $data = shift;
 			$self->debug("Successfully logged in: $data");
-			$self->state(Protocol::IMAP::Authenticated);
+			$self->state('Authenticated');
 		}),
 		on_bad		=> $self->_capture_weakself(sub {
 			my $self = shift;
@@ -754,11 +749,35 @@ sub done {
 		},
 		on_bad		=> sub {
 			my $data = shift;
-			$self->debug("Login failed: $data");
+			$self->debug("DONE command failed: $data");
 		}
 	);
 	return $self;
 }
+
+sub untagged_exists {
+	my $self = shift;
+	my $count = shift;
+	$self->debug("Exists @_");
+	$self->maybe_invoke_event('on_message_available', $count);
+	return $self;
+}
+
+#sub maybe_invoke_event {
+#	my $self = shift;
+#	$self->fetch(
+#		message	=> $idx,
+#		type => 'RFC822.HEADER',
+#		# type => 'RFC822.HEADER RFC822.TEXT',
+#		on_ok => $self->_capture_weakself(sub {
+#			my $self = shift;
+#			my $msg = shift;
+#			$self->on_message($msg);
+#			$self->idle;
+#		})
+#	);
+#	return $self;
+#}
 
 =head2 idle
 
@@ -817,10 +836,25 @@ sub configure {
 		$self->{tls} = 1;
 	}
 
-	foreach (Protocol::IMAP::STATE_HANDLERS, qw{on_idle_update}) {
+	foreach ($self->STATE_HANDLERS, qw{
+		on_idle_update
+		on_message
+		on_message_received
+		on_message_available
+	}) {
 		$self->{$_} = delete $args{$_} if exists $args{$_};
 	}
 	return %args;
 }
 
 1;
+
+__END__
+
+=head1 AUTHOR
+
+Tom Molesworth <cpan@entitymodel.com>
+
+=head1 LICENSE
+
+Licensed under the same terms as Perl itself.

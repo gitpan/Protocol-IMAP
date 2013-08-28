@@ -1,3 +1,6 @@
+0.003     2013-08-28 22:09:50 Europe/London
+	Some cleanup in preparation for the next release.
+
 0.002     2011-01-05 03:06:15 Europe/London
 	Remove 5.10-specific constructs (mostly replacing // with exists).
 	Abstract untagged mailbox info sending to a separate method to reduce code repetition.
