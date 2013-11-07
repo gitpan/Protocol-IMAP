@@ -14,7 +14,7 @@ Protocol::IMAP::Server - server support for the Internet Message Access Protocol
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
@@ -202,5 +202,9 @@ List subscriptions given a search spec.
 =item L<Protocol::IMAP>
 
 L<Authenticated|Protocol::IMAP/Authenticated>, L<ConnectionClosed|Protocol::IMAP/ConnectionClosed>, L<ConnectionEstablished|Protocol::IMAP/ConnectionEstablished>, L<Logout|Protocol::IMAP/Logout>, L<NotAuthenticated|Protocol::IMAP/NotAuthenticated>, L<STATE_HANDLERS|Protocol::IMAP/STATE_HANDLERS>, L<Selected|Protocol::IMAP/Selected>, L<ServerGreeting|Protocol::IMAP/ServerGreeting>, L<debug|Protocol::IMAP/debug>, L<in_state|Protocol::IMAP/in_state>, L<state|Protocol::IMAP/state>, L<state_id|Protocol::IMAP/state_id>, L<write|Protocol::IMAP/write>
+
+=item L<Mixin::Event::Dispatch>
+
+L<add_handler_for_event|Mixin::Event::Dispatch/add_handler_for_event>, L<clear_event_handlers|Mixin::Event::Dispatch/clear_event_handlers>, L<event_handlers|Mixin::Event::Dispatch/event_handlers>, L<invoke_event|Mixin::Event::Dispatch/invoke_event>, L<subscribe_to_event|Mixin::Event::Dispatch/subscribe_to_event>, L<unsubscribe_from_event|Mixin::Event::Dispatch/unsubscribe_from_event>
 
 =back

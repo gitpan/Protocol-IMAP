@@ -14,7 +14,7 @@ Protocol::IMAP::Client - client support for the Internet Message Access Protocol
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
@@ -178,6 +178,9 @@ Process an untagged message from the server.
 
 Fetch untagged message data. Defines the multiline callback so that we build up a buffer for the data to process.
 
+Once we call this method, the pending message takes over input until it has managed
+to read the entire response.
+
 =head2 handle_numeric
 
 Deal with an untagged response with a numeric prefix.
@@ -269,6 +272,10 @@ Issue the STATUS command for either the given mailbox, or INBOX if none is provi
 
 Issue the SELECT command to switch to a different mailbox.
 
+=head2 examine
+
+Like L</select>, but readonly.
+
 =head2 fetch
 
 Issue the FETCH command to retrieve one or more messages.
@@ -305,6 +312,10 @@ Set up any callbacks that were available.
 =item L<Protocol::IMAP>
 
 L<Authenticated|Protocol::IMAP/Authenticated>, L<ConnectionClosed|Protocol::IMAP/ConnectionClosed>, L<ConnectionEstablished|Protocol::IMAP/ConnectionEstablished>, L<Logout|Protocol::IMAP/Logout>, L<NotAuthenticated|Protocol::IMAP/NotAuthenticated>, L<STATE_HANDLERS|Protocol::IMAP/STATE_HANDLERS>, L<Selected|Protocol::IMAP/Selected>, L<ServerGreeting|Protocol::IMAP/ServerGreeting>, L<debug|Protocol::IMAP/debug>, L<in_state|Protocol::IMAP/in_state>, L<state|Protocol::IMAP/state>, L<state_id|Protocol::IMAP/state_id>, L<write|Protocol::IMAP/write>
+
+=item L<Mixin::Event::Dispatch>
+
+L<add_handler_for_event|Mixin::Event::Dispatch/add_handler_for_event>, L<clear_event_handlers|Mixin::Event::Dispatch/clear_event_handlers>, L<event_handlers|Mixin::Event::Dispatch/event_handlers>, L<invoke_event|Mixin::Event::Dispatch/invoke_event>, L<subscribe_to_event|Mixin::Event::Dispatch/subscribe_to_event>, L<unsubscribe_from_event|Mixin::Event::Dispatch/unsubscribe_from_event>
 
 =back
 

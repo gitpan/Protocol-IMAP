@@ -1,6 +1,6 @@
 package Protocol::IMAP::Server;
 {
-  $Protocol::IMAP::Server::VERSION = '0.003';
+  $Protocol::IMAP::Server::VERSION = '0.004';
 }
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ Protocol::IMAP::Server - server support for the Internet Message Access Protocol
 
 =head1 VERSION
 
-version 0.003
+version 0.004
 
 =head1 SYNOPSIS
 
